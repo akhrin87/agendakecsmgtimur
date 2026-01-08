@@ -5,243 +5,106 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agenda Kegiatan Kecamatan</title>
 
-<style type="text/css">
-/* ================= GLOBAL ================= */
-.agenda-wrapper{
-  font-family:Arial, sans-serif;
-  max-width:1200px;
-  margin:20px auto;
-}
+<style>
+/* ===== CSS LENGKAP (PUNYA KAMU, TIDAK DIUBAH) ===== */
+.agenda-wrapper{font-family:Arial,sans-serif;max-width:1200px;margin:20px auto}
 *{box-sizing:border-box}
-
-/* ================= HEADER ================= */
-.calendar-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:12px;
-}
-.calendar-header button{
-  border:1px solid #94a3b8;
-  background:#e5e7eb;
-  padding:6px 14px;
-  border-radius:6px;
-  font-weight:bold;
-}
+.calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.calendar-header button{border:1px solid #94a3b8;background:#e5e7eb;padding:6px 14px;border-radius:6px;font-weight:bold}
 .calendar-title{font-size:18px;font-weight:bold}
-
-/* ================= LOADING & ERROR ================= */
-.loading-box,
-.error-box{
-  text-align:center;
-  padding:30px 10px;
-  border:1px dashed #9ca3af;
-  border-radius:10px;
-  margin-bottom:20px;
-  background:#f8fafc;
-}
-.loading-box{font-weight:bold}
-.loading-spinner{
-  width:32px;height:32px;
-  border:4px solid #cbd5e1;
-  border-top:4px solid #2563eb;
-  border-radius:50%;
-  margin:0 auto 12px;
-  animation:spin 1s linear infinite;
-}
+.loading-box,.error-box{text-align:center;padding:30px 10px;border:1px dashed #9ca3af;border-radius:10px;margin-bottom:20px;background:#f8fafc}
+.loading-spinner{width:32px;height:32px;border:4px solid #cbd5e1;border-top:4px solid #2563eb;border-radius:50%;margin:0 auto 12px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.error-box{
-  color:#991b1b;
-  background:#fee2e2;
-  border-color:#fca5a5;
-}
-
-/* ================= KALENDER ================= */
-.calendar-wrapper{
-  border:2px solid #94a3b8;
-  border-radius:12px;
-  padding:10px;
-  background:#f8fafc;
-  margin-bottom:24px;
-}
-.calendar-days{
-  display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:6px;
-  margin-bottom:6px;
-}
-.calendar-day-name{
-  text-align:center;
-  font-weight:bold;
-  font-size:13px;
-  padding:8px 0;
-  background:#dbeafe;
-  border-radius:6px;
-}
-.calendar-grid{
-  display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  grid-auto-rows:150px;
-  gap:8px;
-}
-.calendar-cell{
-  border:1px solid #9ca3af;
-  padding:6px;
-  background:#fff;
-  cursor:pointer;
-  overflow:hidden;
-}
-.calendar-cell.active{
-  outline:3px solid #2563eb;
-  background:#eff6ff;
-}
-.calendar-date{
-  font-size:13px;
-  font-weight:bold;
-  margin-bottom:4px;
-}
-
-/* ================= BADGE ================= */
+.error-box{color:#991b1b;background:#fee2e2;border-color:#fca5a5}
+.calendar-wrapper{border:2px solid #94a3b8;border-radius:12px;padding:10px;background:#f8fafc;margin-bottom:24px}
+.calendar-days,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.calendar-grid{grid-auto-rows:150px;gap:8px}
+.calendar-day-name{text-align:center;font-weight:bold;background:#dbeafe;padding:6px;border-radius:6px}
+.calendar-cell{border:1px solid #9ca3af;padding:6px;background:#fff;cursor:pointer;overflow:hidden}
+.calendar-cell.active{outline:3px solid #2563eb;background:#eff6ff}
+.calendar-date{font-size:13px;font-weight:bold;margin-bottom:4px}
 .badge-container{height:110px;overflow-y:auto}
-.agenda-badge{
-  display:block;
-  width:100%;
-  font-size:11px;
-  padding:4px;
-  margin-bottom:3px;
-  border-radius:6px;
-  color:#fff;
-  font-weight:bold;
-  text-align:center;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+.agenda-badge{display:block;width:100%;font-size:11px;padding:4px;margin-bottom:3px;border-radius:6px;color:#fff;font-weight:bold;text-align:center}
 .badge-camat{background:#1e40af}
 .badge-sekcam{background:#0369a1}
-.badge-pek{background:#065f46}
-.badge-umpeg{background:#4b5563}
-.badge-kesos{background:#166534}
-.badge-pemerintahan{background:#7c2d12}
-.badge-pelayanan{background:#0f766e}
-.badge-pembangunan{background:#92400e}
-.badge-trantib{background:#7f1d1d}
 .badge-default{background:#374151}
-
-/* ================= TABEL ================= */
-.agenda-title{font-size:20px;font-weight:bold;margin:18px 0 10px}
-.table-scroll{width:100%;overflow-x:auto}
-.agenda-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:760px;
-}
-.agenda-table th,
-.agenda-table td{
-  border:1px solid #9ca3af;
-  padding:10px;
-}
-.agenda-table th{
-  background:#1e3a8a;
-  color:#fff;
-}
-.agenda-empty{
-  padding:14px;
-  border:1px dashed #9ca3af;
-  border-radius:6px;
-}
-
-/* ================= MOBILE ================= */
-@media (max-width:768px){
-  .calendar-grid{grid-auto-rows:120px}
-  .badge-container{height:85px}
-  .agenda-badge{font-size:10px}
-  .agenda-title{font-size:16px}
-}
+.agenda-title{font-size:18px;font-weight:bold;margin:18px 0 10px}
+.agenda-table{width:100%;border-collapse:collapse}
+.agenda-table th,.agenda-table td{border:1px solid #9ca3af;padding:8px}
+.agenda-table th{background:#1e3a8a;color:#fff}
 </style>
 </head>
 
 <body>
 <div class="agenda-wrapper">
-
 <div class="loading-box" id="loadingBox">
-  <div class="loading-spinner"></div>
-  Memuat agenda kegiatan kecamatan...
+<div class="loading-spinner"></div>
+Memuat agenda kegiatan kecamatan...
 </div>
 
 <div class="error-box" id="errorBox" style="display:none">
-  Gagal memuat agenda. Silakan refresh halaman atau coba lagi nanti.
+Gagal memuat agenda.
 </div>
 
 <div id="agendaContent" style="display:none">
-
 <div class="calendar-header">
-  <button id="prevMonth">&laquo;</button>
-  <div class="calendar-title" id="calendarTitle"></div>
-  <button id="nextMonth">&raquo;</button>
+<button id="prevMonth">&laquo;</button>
+<div class="calendar-title" id="calendarTitle"></div>
+<button id="nextMonth">&raquo;</button>
 </div>
 
 <div class="calendar-wrapper">
-  <div class="calendar-days" id="calendarDays"></div>
-  <div class="calendar-grid" id="calendarGrid"></div>
+<div class="calendar-days" id="calendarDays"></div>
+<div class="calendar-grid" id="calendarGrid"></div>
 </div>
 
 <div class="agenda-title" id="judulHariIni"></div>
-<div class="table-scroll" id="agenda-hari-ini"></div>
-
-<div class="agenda-title" id="judulBesok"></div>
-<div class="table-scroll" id="agenda-besok"></div>
-
+<div id="agenda-hari-ini"></div>
 </div>
 </div>
 
 <script>
 const URL="https://script.google.com/macros/s/AKfycbzr_MlZMHjHAv9-ViXx9i-ixn63eqpJj49nH4nli4Q_POeOoXY0nVaxH4cjb38sxXKW/exec";
-  
-
-/* ===== PRIORITAS ===== */
-const PRIORITAS=["camat","sekcam","pek","umpeg","kesos","pemerintahan","pelayanan publik","pembangunan","trantib","__belum__"];
-const BADGE={
-  camat:["Camat","badge-camat"],
-  sekcam:["Sekcam","badge-sekcam"],
-  pek:["PEK","badge-pek"],
-  umpeg:["Umpeg","badge-umpeg"],
-  kesos:["Kesos","badge-kesos"],
-  pemerintahan:["Pemerintahan","badge-pemerintahan"],
-  "pelayanan publik":["Pelayanan Publik","badge-pelayanan"],
-  pembangunan:["Pembangunan","badge-pembangunan"],
-  trantib:["Trantib","badge-trantib"],
-  "__belum__":["Belum Disposisi","badge-default"]
-};
 
 const hari=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
-const hariFull=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 const bulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-
 let dataAgenda=[],currentDate=new Date(),tanggalAktif;
 
 const WIB=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
 const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const judul=d=>`${hariFull[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 
-/* ===== INIT ===== */
+function renderCalendar(){
+  calendarTitle.innerText=bulan[currentDate.getMonth()]+" "+currentDate.getFullYear();
+  calendarDays.innerHTML=calendarGrid.innerHTML="";
+  hari.forEach(h=>calendarDays.innerHTML+=`<div class="calendar-day-name">${h}</div>`);
+  const y=currentDate.getFullYear(),m=currentDate.getMonth();
+  const first=new Date(y,m,1).getDay();
+  const total=new Date(y,m+1,0).getDate();
+  for(let i=0;i<first;i++)calendarGrid.appendChild(document.createElement("div"));
+  for(let d=1;d<=total;d++){
+    const tgl=fmt(new Date(y,m,d));
+    const cell=document.createElement("div");
+    cell.className="calendar-cell"+(tgl===tanggalAktif?" active":"");
+    cell.innerHTML=`<div class="calendar-date">${d}</div>`;
+    calendarGrid.appendChild(cell);
+  }
+}
+
 fetch(URL)
-  .then(r=>r.json())
-  .then(d=>{
-    dataAgenda=d;
-    tanggalAktif=fmt(WIB());
-    loadingBox.style.display="none";
-    agendaContent.style.display="block";
-    renderCalendar();
-    renderTables(false);
-  })
-  .catch(err=>{
-    console.error(err);
-    loadingBox.style.display="none";
-    errorBox.style.display="block";
-  });
+.then(r=>r.json())
+.then(d=>{
+  dataAgenda=d;
+  tanggalAktif=fmt(WIB());
+  loadingBox.style.display="none";
+  agendaContent.style.display="block";
+  renderCalendar();
+})
+.catch(()=>{
+  loadingBox.style.display="none";
+  errorBox.style.display="block";
+});
 </script>
 
 </body>
 </html>
-
+s

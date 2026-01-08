@@ -1,8 +1,41 @@
-<style type="text/css">/* ================= GLOBAL ================= */
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Agenda Kecamatan - Full</title>
+
+<style>
+/* ========== BACKGROUND HALAMAN ========== */
+/* GANTI NAMA FILE JIKA PERLU: pastikan gambar ada di folder yang sama */
+html,body{height:100%;margin:0}
+body{
+  background-image: url("469872048_1140527630969279_3226187238230904716_n1.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* background tidak ikut scroll */
+  font-family: Arial, sans-serif;
+}
+
+/* MOBILE: disable fixed (lebih stabil di HP), adjust position */
+@media (max-width:768px){
+  body{
+    background-attachment: scroll;
+    background-position: center top;
+  }
+}
+
+/* ========== WRAPPER (overlay agar konten terbaca) ========== */
 .agenda-wrapper{
-  font-family:Arial, sans-serif;
   max-width:1200px;
   margin:20px auto;
+  padding:18px;
+  /* overlay gelap semi-transparan supaya teks terbaca di atas background foto */
+  background: rgba(0,0,0,0.45);
+  border-radius:12px;
+  color: #ffffff;
+  box-sizing: border-box;
 }
 *{box-sizing:border-box}
 
@@ -14,51 +47,53 @@
   margin-bottom:12px;
 }
 .calendar-header button{
-  border:1px solid #94a3b8;
-  background:#e5e7eb;
+  border:1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
   padding:6px 14px;
   border-radius:6px;
   font-weight:bold;
+  color: #ffffff;
+  cursor:pointer;
 }
-.calendar-title{font-size:18px;font-weight:bold}
+.calendar-title{
+  font-size:18px;
+  font-weight:bold;
+  color:#ffffff; /* tulis bulan putih (sesuai permintaan) */
+}
 
 /* ================= LOADING & ERROR ================= */
 .loading-box,
 .error-box{
   text-align:center;
   padding:30px 10px;
-  border:1px dashed #9ca3af;
+  border:1px dashed rgba(255,255,255,0.25);
   border-radius:10px;
   margin-bottom:20px;
-  background:#f8fafc;
+  background: rgba(255,255,255,0.02);
+  color: #ffffff;
 }
-.loading-box{
-  font-weight:bold;
-}
+.loading-box{font-weight:bold}
 .loading-spinner{
-  width:32px;
-  height:32px;
-  border:4px solid #cbd5e1;
-  border-top:4px solid #2563eb;
+  width:32px;height:32px;
+  border:4px solid rgba(203,213,225,0.4);
+  border-top:4px solid #60a5fa;
   border-radius:50%;
   margin:0 auto 12px;
   animation:spin 1s linear infinite;
 }
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
+@keyframes spin{ to{ transform:rotate(360deg) } }
 .error-box{
-  color:#991b1b;
-  background:#fee2e2;
-  border-color:#fca5a5;
+  color:#fff;
+  background: rgba(220,38,38,0.15);
+  border-color: rgba(220,38,38,0.3);
 }
 
 /* ================= KALENDER ================= */
 .calendar-wrapper{
-  border:2px solid #94a3b8;
+  border:2px solid rgba(255,255,255,0.15);
   border-radius:12px;
   padding:10px;
-  background:#f8fafc;
+  background: rgba(255,255,255,0.02);
   margin-bottom:24px;
   overflow:hidden;
 }
@@ -73,7 +108,8 @@
   font-weight:bold;
   font-size:13px;
   padding:8px 0;
-  background:#dbeafe;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
   border-radius:6px;
 }
 .calendar-grid{
@@ -85,11 +121,13 @@
 
 /* ================= CELL ================= */
 .calendar-cell{
-  border:1px solid #9ca3af;
+  border:1px solid rgba(255,255,255,0.12);
   padding:6px;
-  background:#fff;
+  background:#ffffff; /* kotak sel kalender putih */
   cursor:pointer;
   overflow:hidden;
+  color: #000; /* tanggal hitam agar kontras di kotak putih */
+  border-radius:6px;
 }
 .calendar-cell.active{
   outline:3px solid #2563eb;
@@ -121,6 +159,7 @@
   text-overflow:ellipsis;
 }
 
+/* contoh kelas warna badge (sama seperti aslinya) */
 .badge-camat{background:#1e40af}
 .badge-sekcam{background:#0369a1}
 .badge-pek{background:#065f46}
@@ -133,36 +172,63 @@
 .badge-default{background:#374151}
 
 /* ================= TABEL ================= */
+/* Permintaan: background tabel putih (tidak transparan) -> saya set putih.
+   Permintaan: tulisan pada tabel putih -> conflict jika teks putih pada latar putih.
+   Jadi: saya buat HEADER tabel (th) bertuliskan putih pada latar gelap,
+   sementara isi tabel (td) berwarna gelap agar terbaca pada latar putih. */
 .agenda-title{
   font-size:20px;
   font-weight:bold;
   margin:18px 0 10px;
+  color: #ffffff;
 }
 .table-scroll{
   width:100%;
   overflow-x:auto;
 }
+
+/* ===== tabel putih solid ===== */
 .agenda-table{
   width:100%;
   border-collapse:collapse;
   min-width:760px;
+  background:#ffffff; /* TABEL PUTIH SOLID (sesuai permintaan) */
+  border-radius:6px;
+  overflow:hidden;
 }
-.agenda-table th,
-.agenda-table td{
-  border:1px solid #9ca3af;
-  padding:10px;
-}
+
+/* header: gelap + teks putih (sesuai permintaan teks putih pada tabel header) */
 .agenda-table th{
   background:#1e3a8a;
-  color:#fff;
+  color:#ffffff; /* teks putih (header) */
+  padding:10px;
+  text-align:left;
+  font-weight:bold;
 }
+
+/* isi tabel: latar putih + teks gelap agar terbaca */
+.agenda-table td{
+  background:#ffffff;
+  color:#0b1220; /* teks gelap agar kontras di latar putih */
+  padding:10px;
+}
+
+/* border */
+.agenda-table th,
+.agenda-table td{
+  border:1px solid #d1d5db;
+}
+
+/* link surat di tengah */
+.agenda-table td a{ text-decoration:none; }
+
+/* bila tidak ada data */
 .agenda-empty{
   padding:14px;
   border:1px dashed #9ca3af;
   border-radius:6px;
-}
-.agenda-table td a{
-  text-decoration:none;
+  background: rgba(255,255,255,0.9);
+  color:#0b1220;
 }
 
 /* ================= MOBILE ================= */
@@ -184,35 +250,41 @@
   }
 }
 </style>
+</head>
+<body>
+
 <div class="agenda-wrapper">
-<div class="loading-box" id="loadingBox">
-<div class="loading-spinner">&nbsp;</div>
-Memuat agenda kegiatan kecamatan...</div>
 
-<div class="error-box" id="errorBox" style="display:none">Gagal memuat agenda. Silakan refresh halaman atau coba lagi nanti.</div>
+  <div class="loading-box" id="loadingBox">
+    <div class="loading-spinner">&nbsp;</div>
+    Memuat agenda kegiatan kecamatan...
+  </div>
 
-<div id="agendaContent" style="display:none">
-<div class="calendar-header"><button id="prevMonth">&laquo;</button>
+  <div class="error-box" id="errorBox" style="display:none">Gagal memuat agenda. Silakan refresh halaman atau coba lagi nanti.</div>
 
-<div class="calendar-title" id="calendarTitle">&nbsp;</div>
-<button id="nextMonth">&raquo;</button></div>
+  <div id="agendaContent" style="display:none">
+    <div class="calendar-header">
+      <button id="prevMonth">&laquo;</button>
+      <div class="calendar-title" id="calendarTitle">&nbsp;</div>
+      <button id="nextMonth">&raquo;</button>
+    </div>
 
-<div class="calendar-wrapper">
-<div class="calendar-days" id="calendarDays">&nbsp;</div>
+    <div class="calendar-wrapper">
+      <div class="calendar-days" id="calendarDays">&nbsp;</div>
+      <div class="calendar-grid" id="calendarGrid">&nbsp;</div>
+    </div>
 
-<div class="calendar-grid" id="calendarGrid">&nbsp;</div>
+    <div class="agenda-title" id="judulHariIni">&nbsp;</div>
+    <div class="table-scroll" id="agenda-hari-ini">&nbsp;</div>
+
+    <div class="agenda-title" id="judulBesok">&nbsp;</div>
+    <div class="table-scroll" id="agenda-besok">&nbsp;</div>
+  </div>
+
 </div>
 
-<div class="agenda-title" id="judulHariIni">&nbsp;</div>
-
-<div class="table-scroll" id="agenda-hari-ini">&nbsp;</div>
-
-<div class="agenda-title" id="judulBesok">&nbsp;</div>
-
-<div class="table-scroll" id="agenda-besok">&nbsp;</div>
-</div>
-</div>
 <script>
+/* ========== SCRIPT ASLI (UTUH) ========== */
 const URL="https://script.google.com/macros/s/AKfycbyBhBT6wZs8TCtWtnk7qhQsykVD5FReO2rx2nh4_BNmKAHQiXpO40IcXtT43DqMPUyThw/exec";
 
 /* ===== PRIORITAS ===== */
@@ -397,3 +469,5 @@ prevMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()-1);renderCale
 nextMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1);renderCalendar()};
 </script>
 
+</body>
+</html>

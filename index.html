@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
+<meta charset="utf-8">
 
-<!-- ================= PAKSA MODE DESKTOP ================= -->
+<!-- PAKSA DESKTOP MODE -->
 <meta name="viewport" content="width=1200">
 
 <title>Agenda Kecamatan</title>
@@ -14,10 +14,10 @@ html,body{
   height:100%;
   margin:0;
   font-family:Arial, sans-serif;
-  overflow-x:auto; /* biar bisa geser kiri-kanan di HP */
+  overflow-x:hidden; /* KUNCI SCROLL KIRI-KANAN */
 }
 
-/* ================= BACKGROUND FIXED ================= */
+/* ================= BACKGROUND ================= */
 body{
   background-image:url("469872048_1140527630969279_3226187238230904716_n1.jpg");
   background-size:cover;
@@ -28,8 +28,7 @@ body{
 
 /* ================= WRAPPER ================= */
 .agenda-wrapper{
-  min-width:1200px;
-  max-width:1200px;
+  width:1200px;
   margin:20px auto;
   padding:20px;
   background:rgba(0,0,0,0.55);
@@ -58,18 +57,16 @@ body{
 .calendar-title{
   font-size:18px;
   font-weight:bold;
-  color:#ffffff;
 }
 
-/* ================= LOADING & ERROR ================= */
+/* ================= LOADING ================= */
 .loading-box,
 .error-box{
   text-align:center;
   padding:30px 10px;
-  border:1px dashed rgba(255,255,255,0.3);
   border-radius:10px;
   margin-bottom:20px;
-  background:rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.1);
 }
 .loading-spinner{
   width:32px;height:32px;
@@ -80,9 +77,6 @@ body{
   animation:spin 1s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.error-box{
-  background:rgba(220,38,38,0.35);
-}
 
 /* ================= KALENDER ================= */
 .calendar-wrapper{
@@ -119,7 +113,6 @@ body{
   padding:6px;
   background:#ffffff;
   cursor:pointer;
-  overflow:hidden;
   border-radius:6px;
   color:#000;
 }
@@ -134,13 +127,9 @@ body{
 }
 
 /* ================= BADGE ================= */
-.badge-container{
-  height:110px;
-  overflow-y:auto;
-}
+.badge-container{height:110px;overflow-y:auto}
 .agenda-badge{
   display:block;
-  width:100%;
   font-size:11px;
   padding:4px;
   margin-bottom:3px;
@@ -148,9 +137,6 @@ body{
   color:#fff;
   font-weight:bold;
   text-align:center;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 
 .badge-camat{background:#1e40af}
@@ -170,14 +156,9 @@ body{
   font-weight:bold;
   margin:18px 0 10px;
 }
-.table-scroll{
-  width:100%;
-  overflow-x:auto;
-}
 .agenda-table{
   width:100%;
   border-collapse:collapse;
-  min-width:760px;
   background:#ffffff;
 }
 .agenda-table th{
@@ -186,18 +167,12 @@ body{
   padding:10px;
 }
 .agenda-table td{
-  background:#ffffff;
   color:#111827;
   padding:10px;
-}
-.agenda-table th,
-.agenda-table td{
   border:1px solid #9ca3af;
 }
 .agenda-empty{
   padding:14px;
-  border:1px dashed #9ca3af;
-  border-radius:6px;
   background:#ffffff;
   color:#111;
 }
@@ -214,10 +189,6 @@ body{
 Memuat agenda kegiatan kecamatan...
 </div>
 
-<div class="error-box" id="errorBox" style="display:none">
-Gagal memuat agenda. Silakan refresh halaman atau coba lagi nanti.
-</div>
-
 <div id="agendaContent" style="display:none">
 
 <div class="calendar-header">
@@ -232,16 +203,15 @@ Gagal memuat agenda. Silakan refresh halaman atau coba lagi nanti.
 </div>
 
 <div class="agenda-title" id="judulHariIni"></div>
-<div class="table-scroll" id="agenda-hari-ini"></div>
+<div id="agenda-hari-ini"></div>
 
 <div class="agenda-title" id="judulBesok"></div>
-<div class="table-scroll" id="agenda-besok"></div>
+<div id="agenda-besok"></div>
 
 </div>
 </div>
 
 <script>
-/* ================= SCRIPT ASLI (UTUH) ================= */
 const URL="https://script.google.com/macros/s/AKfycbyBhBT6wZs8TCtWtnk7qhQsykVD5FReO2rx2nh4_BNmKAHQiXpO40IcXtT43DqMPUyThw/exec";
 
 const PRIORITAS=["camat","sekcam","pek","umpeg","kesos","pemerintahan","pelayanan publik","pembangunan","trantib","__belum__"];
@@ -269,24 +239,6 @@ const WIB=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta
 const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const judul=d=>`${hariFull[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 
-function normalisasiDisposisi(t){
-  if(!t||t==="-"||t==="null")return"__belum__";
-  return t.toString().toLowerCase();
-}
-
-function getPrioritas(t){
-  t=normalisasiDisposisi(t);
-  for(let i=0;i<PRIORITAS.length;i++)if(t.includes(PRIORITAS[i]))return i;
-  return PRIORITAS.length;
-}
-
-function parseBadgeSorted(t){
-  t=normalisasiDisposisi(t);
-  if(t==="__belum__")return[{label:"Belum Disposisi",cls:"badge-default",p:999}];
-  return PRIORITAS.filter(k=>k!=="__belum__"&&t.includes(k))
-    .map((k,i)=>({label:BADGE[k][0],cls:BADGE[k][1],p:i}));
-}
-
 function renderCalendar(){
   calendarTitle.innerText=`${bulan[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
   calendarDays.innerHTML=calendarGrid.innerHTML="";
@@ -305,51 +257,42 @@ function renderCalendar(){
     const wrap=document.createElement("div");
     wrap.className="badge-container";
     dataAgenda.filter(a=>a.tanggal===tgl)
-      .forEach(a=>parseBadgeSorted(a.disposisi)
-      .forEach(b=>{
+      .forEach(a=>{
+        const b=BADGE[a.disposisi?.toLowerCase()]||BADGE["__belum__"];
         const el=document.createElement("div");
-        el.className="agenda-badge "+b.cls;
-        el.textContent=b.label;
+        el.className="agenda-badge "+b[1];
+        el.textContent=b[0];
         wrap.appendChild(el);
-      }));
+      });
     cell.appendChild(dateEl);
     cell.appendChild(wrap);
-    cell.onclick=()=>{tanggalAktif=tgl;renderCalendar();renderTables(true)};
     calendarGrid.appendChild(cell);
   }
 }
 
-function renderTable(tgls,target){
-  const list=dataAgenda.filter(a=>tgls.includes(a.tanggal))
-    .sort((a,b)=>getPrioritas(a.disposisi)-getPrioritas(b.disposisi));
+function renderTable(tgl,target){
+  const list=dataAgenda.filter(a=>a.tanggal===tgl);
   if(!list.length){
     document.getElementById(target).innerHTML="<div class='agenda-empty'>Tidak ada agenda.</div>";
     return;
   }
   let h=`<table class="agenda-table"><tr>
-  <th>Surat Dari</th><th>Acara</th><th>Hari</th><th>Tanggal</th>
-  <th>Tempat</th><th>Pukul</th><th>Disposisi</th><th>Surat</th></tr>`;
+  <th>Surat Dari</th><th>Acara</th><th>Tempat</th><th>Pukul</th><th>Surat</th></tr>`;
   list.forEach(a=>{
+    const icon=a.linkSurat?`<a href="${a.linkSurat}" target="_blank">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626">
+    <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+    <text x="7" y="18" font-size="7" fill="white" font-weight="bold">PDF</text>
+    </svg></a>`:"";
     h+=`<tr>
     <td>${a.suratDari}</td>
     <td>${a.acara}</td>
-    <td>${a.hari}</td>
-    <td>${a.tanggal}</td>
     <td>${a.tempat}</td>
     <td>${a.pukul}</td>
-    <td>${a.disposisi||"Belum Disposisi"}</td>
-    <td></td></tr>`;
+    <td style="text-align:center">${icon}</td>
+    </tr>`;
   });
   document.getElementById(target).innerHTML=h+"</table>";
-}
-
-function renderTables(){
-  const base=new Date(tanggalAktif);
-  judulHariIni.innerText="Agenda Hari "+judul(base);
-  renderTable([fmt(base)],"agenda-hari-ini");
-  base.setDate(base.getDate()+1);
-  judulBesok.innerText="Agenda yang akan datang Hari "+judul(base);
-  renderTable([fmt(base)],"agenda-besok");
 }
 
 fetch(URL).then(r=>r.json()).then(d=>{
@@ -358,7 +301,7 @@ fetch(URL).then(r=>r.json()).then(d=>{
   loadingBox.style.display="none";
   agendaContent.style.display="block";
   renderCalendar();
-  renderTables();
+  renderTable(tanggalAktif,"agenda-hari-ini");
 });
 </script>
 

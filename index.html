@@ -2,35 +2,41 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-
-<!-- DESKTOP LAYOUT TANPA ZOOM -->
-<meta name="viewport" content="width=1200">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Agenda Kecamatan</title>
 
 <style>
-/* ================= GLOBAL ================= */
+/* ================= RESET & GLOBAL ================= */
+*,
+*::before,
+*::after{
+  box-sizing:border-box;
+}
+
 html,body{
   margin:0;
   padding:0;
-  background:#000;
+  min-height:100vh;
   font-family:Arial, sans-serif;
-  overflow-x:hidden;
 }
 
-/* ================= BACKGROUND ================= */
+/* ================= BACKGROUND FULL ================= */
 body{
   background-image:url("469872048_1140527630969279_3226187238230904716_n1.jpg");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
   background-attachment:fixed;
+  display:flex;
+  justify-content:center;
 }
 
 /* ================= WRAPPER ================= */
 .agenda-wrapper{
-  width:1200px;
-  margin:20px auto;
+  width:100%;
+  max-width:1200px;
+  margin:20px;
   padding:20px;
   background:rgba(0,0,0,0.55);
   border-radius:14px;
@@ -40,8 +46,9 @@ body{
 /* ================= HEADER ================= */
 .calendar-header{
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
+  gap:10px;
   margin-bottom:12px;
 }
 .calendar-header button{
@@ -56,6 +63,8 @@ body{
 .calendar-title{
   font-size:18px;
   font-weight:bold;
+  text-align:center;
+  flex:1;
 }
 
 /* ================= LOADING ================= */
@@ -64,7 +73,8 @@ body{
   padding:30px;
 }
 .loading-spinner{
-  width:32px;height:32px;
+  width:32px;
+  height:32px;
   border:4px solid #cbd5e1;
   border-top:4px solid #60a5fa;
   border-radius:50%;
@@ -79,6 +89,7 @@ body{
   border-radius:12px;
   padding:10px;
   background:rgba(255,255,255,0.05);
+  margin-bottom:24px;
 }
 .calendar-days{
   display:grid;
@@ -97,18 +108,16 @@ body{
 .calendar-grid{
   display:grid;
   grid-template-columns:repeat(7,1fr);
-  grid-auto-rows:150px;
   gap:8px;
 }
-
-/* ================= CELL ================= */
 .calendar-cell{
+  min-height:150px;
   border:1px solid #9ca3af;
   padding:6px;
   background:#ffffff;
   border-radius:6px;
-  cursor:pointer;
   color:#000;
+  cursor:pointer;
 }
 .calendar-cell.active{
   outline:3px solid #2563eb;
@@ -122,11 +131,10 @@ body{
 
 /* ================= BADGE ================= */
 .badge-container{
-  height:110px;
+  max-height:110px;
   overflow-y:auto;
 }
 .agenda-badge{
-  display:block;
   font-size:11px;
   padding:4px;
   margin-bottom:3px;
@@ -152,6 +160,10 @@ body{
   font-weight:bold;
   margin:18px 0 10px;
 }
+.table-scroll{
+  width:100%;
+  overflow-x:auto;
+}
 .agenda-table{
   width:100%;
   border-collapse:collapse;
@@ -170,8 +182,14 @@ body{
 .agenda-table td a{text-decoration:none}
 .agenda-empty{
   padding:14px;
-  background:#fff;
+  background:#ffffff;
   color:#111;
+}
+
+/* ================= RESPONSIVE HALUS ================= */
+@media(max-width:768px){
+  .calendar-cell{min-height:120px}
+  .agenda-title{font-size:16px}
 }
 </style>
 </head>
@@ -199,16 +217,21 @@ body{
 </div>
 
 <div class="agenda-title" id="judulHariIni"></div>
-<div id="agenda-hari-ini"></div>
+<div class="table-scroll" id="agenda-hari-ini"></div>
 
 <div class="agenda-title" id="judulBesok"></div>
-<div id="agenda-besok"></div>
+<div class="table-scroll" id="agenda-besok"></div>
 
 </div>
 </div>
 
 <script>
+/* ================= SCRIPT (UTUH & STABIL) ================= */
 const URL="https://script.google.com/macros/s/AKfycbyBhBT6wZs8TCtWtnk7qhQsykVD5FReO2rx2nh4_BNmKAHQiXpO40IcXtT43DqMPUyThw/exec";
+
+const hari=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+const hariFull=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const bulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 const PRIORITAS=["camat","sekcam","pek","umpeg","kesos","pemerintahan","pelayanan publik","pembangunan","trantib","__belum__"];
 const BADGE={
@@ -223,10 +246,6 @@ const BADGE={
   trantib:["Trantib","badge-trantib"],
   "__belum__":["Belum Disposisi","badge-default"]
 };
-
-const hari=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
-const hariFull=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
-const bulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 let dataAgenda=[],currentDate=new Date(),tanggalAktif;
 
@@ -299,12 +318,12 @@ function renderTable(tgl,target){
 
   list.forEach(a=>{
     const icon=a.linkSurat?`
-    <a href="${a.linkSurat}" target="_blank">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626">
-        <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-        <text x="7" y="18" font-size="7" fill="white" font-weight="bold">PDF</text>
-      </svg>
-    </a>`:"";
+      <a href="${a.linkSurat}" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626">
+          <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+          <text x="7" y="18" font-size="7" fill="white" font-weight="bold">PDF</text>
+        </svg>
+      </a>`:"";
 
     h+=`<tr>
       <td>${a.suratDari}</td>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 
-<!-- PAKSA DESKTOP LAYOUT -->
-<meta name="viewport" content="width=1200, initial-scale=1, maximum-scale=1">
+<!-- DESKTOP LAYOUT TANPA ZOOM -->
+<meta name="viewport" content="width=1200">
 
 <title>Agenda Kecamatan</title>
 
@@ -13,10 +13,9 @@
 html,body{
   margin:0;
   padding:0;
-  width:100%;
-  height:100%;
-  overflow-x:hidden; /* TIDAK BOLEH SCROLL KIRI KANAN */
+  background:#000;
   font-family:Arial, sans-serif;
+  overflow-x:hidden;
 }
 
 /* ================= BACKGROUND ================= */
@@ -28,15 +27,6 @@ body{
   background-attachment:fixed;
 }
 
-/* ================= SCALE DESKTOP AGAR MUAT DI HP ================= */
-@media (max-width: 1200px){
-  body{
-    transform: scale(calc(100vw / 1200));
-    transform-origin: top center;
-    width:1200px;
-  }
-}
-
 /* ================= WRAPPER ================= */
 .agenda-wrapper{
   width:1200px;
@@ -45,7 +35,6 @@ body{
   background:rgba(0,0,0,0.55);
   border-radius:14px;
   color:#ffffff;
-  box-sizing:border-box;
 }
 
 /* ================= HEADER ================= */
@@ -70,13 +59,9 @@ body{
 }
 
 /* ================= LOADING ================= */
-.loading-box,
-.error-box{
+.loading-box{
   text-align:center;
-  padding:30px 10px;
-  border-radius:10px;
-  margin-bottom:20px;
-  background:rgba(255,255,255,0.1);
+  padding:30px;
 }
 .loading-spinner{
   width:32px;height:32px;
@@ -94,7 +79,6 @@ body{
   border-radius:12px;
   padding:10px;
   background:rgba(255,255,255,0.05);
-  margin-bottom:24px;
 }
 .calendar-days{
   display:grid;
@@ -123,6 +107,7 @@ body{
   padding:6px;
   background:#ffffff;
   border-radius:6px;
+  cursor:pointer;
   color:#000;
 }
 .calendar-cell.active{
@@ -136,8 +121,12 @@ body{
 }
 
 /* ================= BADGE ================= */
-.badge-container{height:110px;overflow-y:auto}
+.badge-container{
+  height:110px;
+  overflow-y:auto;
+}
 .agenda-badge{
+  display:block;
   font-size:11px;
   padding:4px;
   margin-bottom:3px;
@@ -174,16 +163,16 @@ body{
   padding:10px;
 }
 .agenda-table td{
-  color:#111827;
   padding:10px;
   border:1px solid #9ca3af;
-}
-.agenda-empty{
-  padding:14px;
-  background:#ffffff;
   color:#111;
 }
 .agenda-table td a{text-decoration:none}
+.agenda-empty{
+  padding:14px;
+  background:#fff;
+  color:#111;
+}
 </style>
 </head>
 
@@ -192,25 +181,21 @@ body{
 <div class="agenda-wrapper">
 
 <div class="loading-box" id="loadingBox">
-<div class="loading-spinner"></div>
-Memuat agenda kegiatan kecamatan...
-</div>
-
-<div class="error-box" id="errorBox" style="display:none">
-Gagal memuat agenda. Silakan refresh halaman.
+  <div class="loading-spinner"></div>
+  Memuat agenda kegiatan kecamatan...
 </div>
 
 <div id="agendaContent" style="display:none">
 
 <div class="calendar-header">
-<button id="prevMonth">&laquo;</button>
-<div class="calendar-title" id="calendarTitle"></div>
-<button id="nextMonth">&raquo;</button>
+  <button id="prevMonth">&laquo;</button>
+  <div class="calendar-title" id="calendarTitle"></div>
+  <button id="nextMonth">&raquo;</button>
 </div>
 
 <div class="calendar-wrapper">
-<div class="calendar-days" id="calendarDays"></div>
-<div class="calendar-grid" id="calendarGrid"></div>
+  <div class="calendar-days" id="calendarDays"></div>
+  <div class="calendar-grid" id="calendarGrid"></div>
 </div>
 
 <div class="agenda-title" id="judulHariIni"></div>
@@ -225,6 +210,20 @@ Gagal memuat agenda. Silakan refresh halaman.
 <script>
 const URL="https://script.google.com/macros/s/AKfycbyBhBT6wZs8TCtWtnk7qhQsykVD5FReO2rx2nh4_BNmKAHQiXpO40IcXtT43DqMPUyThw/exec";
 
+const PRIORITAS=["camat","sekcam","pek","umpeg","kesos","pemerintahan","pelayanan publik","pembangunan","trantib","__belum__"];
+const BADGE={
+  camat:["Camat","badge-camat"],
+  sekcam:["Sekcam","badge-sekcam"],
+  pek:["PEK","badge-pek"],
+  umpeg:["Umpeg","badge-umpeg"],
+  kesos:["Kesos","badge-kesos"],
+  pemerintahan:["Pemerintahan","badge-pemerintahan"],
+  "pelayanan publik":["Pelayanan Publik","badge-pelayanan"],
+  pembangunan:["Pembangunan","badge-pembangunan"],
+  trantib:["Trantib","badge-trantib"],
+  "__belum__":["Belum Disposisi","badge-default"]
+};
+
 const hari=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
 const hariFull=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 const bulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -233,6 +232,19 @@ let dataAgenda=[],currentDate=new Date(),tanggalAktif;
 
 const WIB=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
 const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const judul=d=>`${hariFull[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+
+function normalisasiDisposisi(t){
+  if(!t||t==="-"||t==="null")return"__belum__";
+  return t.toLowerCase();
+}
+
+function parseBadgeSorted(t){
+  t=normalisasiDisposisi(t);
+  if(t==="__belum__")return[{label:"Belum Disposisi",cls:"badge-default"}];
+  return PRIORITAS.filter(k=>k!=="__belum__"&&t.includes(k))
+    .map(k=>({label:BADGE[k][0],cls:BADGE[k][1]}));
+}
 
 function renderCalendar(){
   calendarTitle.innerText=`${bulan[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
@@ -248,11 +260,29 @@ function renderCalendar(){
   for(let d=1;d<=total;d++){
     const tgl=fmt(new Date(y,m,d));
     const cell=document.createElement("div");
-    cell.className="calendar-cell";
+    cell.className="calendar-cell"+(tgl===tanggalAktif?" active":"");
+
     const dateEl=document.createElement("div");
     dateEl.className="calendar-date";
     dateEl.textContent=d;
+
+    const wrap=document.createElement("div");
+    wrap.className="badge-container";
+
+    dataAgenda.filter(a=>a.tanggal===tgl)
+      .forEach(a=>{
+        parseBadgeSorted(a.disposisi)
+          .forEach(b=>{
+            const el=document.createElement("div");
+            el.className="agenda-badge "+b.cls;
+            el.textContent=b.label;
+            wrap.appendChild(el);
+          });
+      });
+
     cell.appendChild(dateEl);
+    cell.appendChild(wrap);
+    cell.onclick=()=>{tanggalAktif=tgl;renderCalendar();renderTables()};
     calendarGrid.appendChild(cell);
   }
 }
@@ -288,13 +318,23 @@ function renderTable(tgl,target){
   document.getElementById(target).innerHTML=h+"</table>";
 }
 
+function renderTables(){
+  const base=new Date(tanggalAktif);
+  document.getElementById("judulHariIni").innerText="Agenda Hari "+judul(base);
+  renderTable(fmt(base),"agenda-hari-ini");
+
+  base.setDate(base.getDate()+1);
+  document.getElementById("judulBesok").innerText="Agenda yang akan datang Hari "+judul(base);
+  renderTable(fmt(base),"agenda-besok");
+}
+
 fetch(URL).then(r=>r.json()).then(d=>{
   dataAgenda=d;
   tanggalAktif=fmt(WIB());
-  loadingBox.style.display="none";
-  agendaContent.style.display="block";
+  document.getElementById("loadingBox").style.display="none";
+  document.getElementById("agendaContent").style.display="block";
   renderCalendar();
-  renderTable(tanggalAktif,"agenda-hari-ini");
+  renderTables();
 });
 </script>
 

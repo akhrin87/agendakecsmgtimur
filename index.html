@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Agenda Kecamatan - Full</title>
+<meta name="viewport" content="width=1200" />
+<title>Agenda Kecamatan Semarang Timur</title>
 
 <style>
 /* ========== BACKGROUND HALAMAN ========== */
@@ -219,6 +219,11 @@ body{
   border:1px solid #d1d5db;
 }
 
+.agenda-table svg{
+  display:block;
+  margin:auto;
+}
+
 /* link surat di tengah */
 .agenda-table td a{ text-decoration:none; }
 
@@ -232,23 +237,7 @@ body{
 }
 
 /* ================= MOBILE ================= */
-@media (max-width:768px){
-  html,body{overflow-x:hidden}
-  .calendar-grid{gap:0;grid-auto-rows:120px}
-  .calendar-cell{padding:4px}
-  .badge-container{height:85px}
-  .agenda-badge{font-size:10px;padding:3px}
-  .agenda-title{font-size:16px}
-  .agenda-table{font-size:12px;min-width:640px}
-  .agenda-table th,
-  .agenda-table td{padding:6px}
-  .agenda-table th:nth-child(3),
-  .agenda-table td:nth-child(3),
-  .agenda-table th:nth-child(4),
-  .agenda-table td:nth-child(4){
-    display:none;
-  }
-}
+
 </style>
 </head>
 <body>
@@ -471,3 +460,4 @@ nextMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1);renderCale
 
 </body>
 </html>
+

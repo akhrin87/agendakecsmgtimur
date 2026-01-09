@@ -3,18 +3,20 @@
 <head>
 <meta charset="utf-8">
 
-<!-- PAKSA DESKTOP MODE -->
-<meta name="viewport" content="width=1200">
+<!-- PAKSA DESKTOP LAYOUT -->
+<meta name="viewport" content="width=1200, initial-scale=1, maximum-scale=1">
 
 <title>Agenda Kecamatan</title>
 
 <style>
 /* ================= GLOBAL ================= */
 html,body{
-  height:100%;
   margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow-x:hidden; /* TIDAK BOLEH SCROLL KIRI KANAN */
   font-family:Arial, sans-serif;
-  overflow-x:hidden; /* KUNCI SCROLL KIRI-KANAN */
 }
 
 /* ================= BACKGROUND ================= */
@@ -26,6 +28,15 @@ body{
   background-attachment:fixed;
 }
 
+/* ================= SCALE DESKTOP AGAR MUAT DI HP ================= */
+@media (max-width: 1200px){
+  body{
+    transform: scale(calc(100vw / 1200));
+    transform-origin: top center;
+    width:1200px;
+  }
+}
+
 /* ================= WRAPPER ================= */
 .agenda-wrapper{
   width:1200px;
@@ -34,9 +45,8 @@ body{
   background:rgba(0,0,0,0.55);
   border-radius:14px;
   color:#ffffff;
+  box-sizing:border-box;
 }
-
-*{box-sizing:border-box}
 
 /* ================= HEADER ================= */
 .calendar-header{
@@ -112,7 +122,6 @@ body{
   border:1px solid #9ca3af;
   padding:6px;
   background:#ffffff;
-  cursor:pointer;
   border-radius:6px;
   color:#000;
 }
@@ -129,7 +138,6 @@ body{
 /* ================= BADGE ================= */
 .badge-container{height:110px;overflow-y:auto}
 .agenda-badge{
-  display:block;
   font-size:11px;
   padding:4px;
   margin-bottom:3px;
@@ -138,7 +146,6 @@ body{
   font-weight:bold;
   text-align:center;
 }
-
 .badge-camat{background:#1e40af}
 .badge-sekcam{background:#0369a1}
 .badge-pek{background:#065f46}
@@ -189,6 +196,10 @@ body{
 Memuat agenda kegiatan kecamatan...
 </div>
 
+<div class="error-box" id="errorBox" style="display:none">
+Gagal memuat agenda. Silakan refresh halaman.
+</div>
+
 <div id="agendaContent" style="display:none">
 
 <div class="calendar-header">
@@ -214,21 +225,6 @@ Memuat agenda kegiatan kecamatan...
 <script>
 const URL="https://script.google.com/macros/s/AKfycbyBhBT6wZs8TCtWtnk7qhQsykVD5FReO2rx2nh4_BNmKAHQiXpO40IcXtT43DqMPUyThw/exec";
 
-const PRIORITAS=["camat","sekcam","pek","umpeg","kesos","pemerintahan","pelayanan publik","pembangunan","trantib","__belum__"];
-
-const BADGE={
-  camat:["Camat","badge-camat"],
-  sekcam:["Sekcam","badge-sekcam"],
-  pek:["PEK","badge-pek"],
-  umpeg:["Umpeg","badge-umpeg"],
-  kesos:["Kesos","badge-kesos"],
-  pemerintahan:["Pemerintahan","badge-pemerintahan"],
-  "pelayanan publik":["Pelayanan Publik","badge-pelayanan"],
-  pembangunan:["Pembangunan","badge-pembangunan"],
-  trantib:["Trantib","badge-trantib"],
-  "__belum__":["Belum Disposisi","badge-default"]
-};
-
 const hari=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
 const hariFull=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 const bulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -237,35 +233,26 @@ let dataAgenda=[],currentDate=new Date(),tanggalAktif;
 
 const WIB=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
 const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const judul=d=>`${hariFull[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 
 function renderCalendar(){
   calendarTitle.innerText=`${bulan[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
   calendarDays.innerHTML=calendarGrid.innerHTML="";
   hari.forEach(h=>calendarDays.innerHTML+=`<div class="calendar-day-name">${h}</div>`);
+
   const y=currentDate.getFullYear(),m=currentDate.getMonth();
   const first=new Date(y,m,1).getDay();
   const total=new Date(y,m+1,0).getDate();
+
   for(let i=0;i<first;i++)calendarGrid.appendChild(document.createElement("div"));
+
   for(let d=1;d<=total;d++){
     const tgl=fmt(new Date(y,m,d));
     const cell=document.createElement("div");
-    cell.className="calendar-cell"+(tgl===tanggalAktif?" active":"");
+    cell.className="calendar-cell";
     const dateEl=document.createElement("div");
     dateEl.className="calendar-date";
     dateEl.textContent=d;
-    const wrap=document.createElement("div");
-    wrap.className="badge-container";
-    dataAgenda.filter(a=>a.tanggal===tgl)
-      .forEach(a=>{
-        const b=BADGE[a.disposisi?.toLowerCase()]||BADGE["__belum__"];
-        const el=document.createElement("div");
-        el.className="agenda-badge "+b[1];
-        el.textContent=b[0];
-        wrap.appendChild(el);
-      });
     cell.appendChild(dateEl);
-    cell.appendChild(wrap);
     calendarGrid.appendChild(cell);
   }
 }
@@ -276,22 +263,28 @@ function renderTable(tgl,target){
     document.getElementById(target).innerHTML="<div class='agenda-empty'>Tidak ada agenda.</div>";
     return;
   }
+
   let h=`<table class="agenda-table"><tr>
   <th>Surat Dari</th><th>Acara</th><th>Tempat</th><th>Pukul</th><th>Surat</th></tr>`;
+
   list.forEach(a=>{
-    const icon=a.linkSurat?`<a href="${a.linkSurat}" target="_blank">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626">
-    <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-    <text x="7" y="18" font-size="7" fill="white" font-weight="bold">PDF</text>
-    </svg></a>`:"";
+    const icon=a.linkSurat?`
+    <a href="${a.linkSurat}" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626">
+        <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+        <text x="7" y="18" font-size="7" fill="white" font-weight="bold">PDF</text>
+      </svg>
+    </a>`:"";
+
     h+=`<tr>
-    <td>${a.suratDari}</td>
-    <td>${a.acara}</td>
-    <td>${a.tempat}</td>
-    <td>${a.pukul}</td>
-    <td style="text-align:center">${icon}</td>
+      <td>${a.suratDari}</td>
+      <td>${a.acara}</td>
+      <td>${a.tempat}</td>
+      <td>${a.pukul}</td>
+      <td style="text-align:center">${icon}</td>
     </tr>`;
   });
+
   document.getElementById(target).innerHTML=h+"</table>";
 }
 

@@ -421,14 +421,33 @@ function renderTable(tgls,target){
 
 function renderTables(ignore=false){
   const now=WIB();
+  const jam=now.getHours();          // TESTING: jam 12
+  const hariNow=now.getDay();        // 0=Min ... 6=Sab
+
+  let tanggalUI2=[];
   let base=new Date(tanggalAktif);
-  if(!ignore && now.getHours()>=15) base.setDate(base.getDate()+1);
 
-  judulHariIni.innerText="Agenda Hari "+judul(base);
-  renderTable([fmt(base)],"agenda-hari-ini");
+  if(!ignore && jam>=15){
+    if(hariNow>=1 && hariNow<=4){
+      base.setDate(base.getDate()+1);
+      tanggalUI2=[fmt(base)];
+    }else{
+      let sabtu=new Date(base);
+      sabtu.setDate(base.getDate()+(6-hariNow));
+      let minggu=new Date(sabtu); minggu.setDate(sabtu.getDate()+1);
+      let senin=new Date(minggu); senin.setDate(minggu.getDate()+1);
+      tanggalUI2=[fmt(sabtu),fmt(minggu),fmt(senin)];
+    }
+  }else{
+    tanggalUI2=[fmt(base)];
+  }
 
-  const next=new Date(base);next.setDate(next.getDate()+1);
-  judulBesok.innerText="Agenda yang akan datang Hari "+judul(next);
+  judulHariIni.innerText="Agenda "+tanggalUI2.join(" s/d ");
+  renderTable(tanggalUI2,"agenda-hari-ini");
+
+  let next=new Date(tanggalUI2[tanggalUI2.length-1]);
+  next.setDate(next.getDate()+1);
+  judulBesok.innerText="Agenda yang akan datang "+judul(next);
   renderTable([fmt(next)],"agenda-besok");
 }
 
@@ -460,4 +479,3 @@ nextMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1);renderCale
 
 </body>
 </html>
-

@@ -420,17 +420,90 @@ function renderTable(tgls,target){
 }
 
 function renderTables(ignore=false){
-  const now=WIB();
-  let base=new Date(tanggalAktif);
-  if(!ignore && now.getHours()>=15) base.setDate(base.getDate()+1);
+  const now = WIB();
+  const day = now.getDay();
+  const hour = now.getHours();
 
-  judulHariIni.innerText="Agenda Hari "+judul(base);
-  renderTable([fmt(base)],"agenda-hari-ini");
+  let tglUI2 = [];
+  let tglUI3 = [];
 
-  const next=new Date(base);next.setDate(next.getDate()+1);
-  judulBesok.innerText="Agenda yang akan datang Hari "+judul(next);
-  renderTable([fmt(next)],"agenda-besok");
+  const today = new Date(now);
+
+  const addDay = (base, n) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+
+  const fmtArr = d => fmt(d);
+
+  // ===============================
+  // JUMAT SETELAH JAM 15
+  // ===============================
+  if (day === 5 && hour >= 15 && !ignore) {
+    tglUI2 = [addDay(today,1), addDay(today,2), addDay(today,3)];
+    tglUI3 = [fmt(addDay(today,4))];
+  }
+
+  // ===============================
+  // SABTU
+  // ===============================
+  else if (day === 6 && !ignore) {
+    tglUI2 = [addDay(today,0), addDay(today,1), addDay(today,2)];
+    tglUI3 = [fmt(addDay(today,3))];
+  }
+
+  // ===============================
+  // MINGGU
+  // ===============================
+  else if (day === 0 && !ignore) {
+    tglUI2 = [addDay(today,-1), addDay(today,0), addDay(today,1)];
+    tglUI3 = [fmt(addDay(today,2))];
+  }
+
+  // ===============================
+  // SENIN SEBELUM JAM 15
+  // ===============================
+  else if (day === 1 && hour < 15 && !ignore) {
+    tglUI2 = [addDay(today,-2), addDay(today,-1), addDay(today,0)];
+    tglUI3 = [fmt(addDay(today,1))];
+  }
+
+  // ===============================
+  // NORMAL
+  // ===============================
+  else {
+    let base = new Date(tanggalAktif);
+    if (!ignore && hour >= 15) base.setDate(base.getDate() + 1);
+
+    tglUI2 = [base];
+
+    const next = new Date(base);
+    next.setDate(next.getDate() + 1);
+    tglUI3 = [fmt(next)];
+  }
+
+  // ===============================
+  // JUDUL DINAMIS
+  // ===============================
+  const hariList = tglUI2.map(d => hariFull[d.getDay()]);
+  const tanggalList = tglUI2.map(d => d.getDate());
+
+  const bulanText = bulan[tglUI2[0].getMonth()];
+  const tahunText = tglUI2[0].getFullYear();
+
+  judulHariIni.innerText =
+    `Agenda Hari ${hariList.join(", ")}, tanggal ${tanggalList.join(", ")} ${bulanText} ${tahunText}`;
+
+  renderTable(tglUI2.map(fmtArr), "agenda-hari-ini");
+
+  // ===============================
+  // UI 3
+  // ===============================
+  judulBesok.innerText = "Agenda Yang Akan Datang";
+  renderTable(tglUI3, "agenda-besok");
 }
+
 
 /* ===== INIT DENGAN LOADING ===== */
 fetch(URL)
